@@ -122,7 +122,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String name = query.getName();
         UserStatus status = query.getStatus();
         // 构建分页条件
-        Page<User> page = query.toMpPageDefaultSortByUpdateTime(); //TODO
+        Page<User> page = query.toMpPageDefaultSortByUpdateTime();
 
         // 分页查询
         Page<User> userPage = lambdaQuery()
@@ -132,7 +132,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         // 封装VO结果返回
         // return PageDTO.of(userPage, user -> BeanUtil.copyProperties(user, UserVO.class));
-        return PageDTO.of(userPage, user -> {  //TODO
+        return PageDTO.of(userPage, user -> {
             // vo2po
             // 拷贝基础属性
             UserVO vo = BeanUtil.copyProperties(user, UserVO.class);
