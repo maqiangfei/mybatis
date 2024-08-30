@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.maffy.mapper.BrandMapper">
+
+    <!--sql片段-->
+    <sql id="brand_column">
+        id, brand_name brandName, company_name companyName, ordered, description, status
+    </sql>
+
+    <insert id="add" useGeneratedKeys="true" keyProperty="id">
+        insert into tb_brand(brand_name, company_name, ordered, description, status)
+        values (#{brandName}, #{companyName}, #{ordered}, #{description}, #{status});
+    </insert>
+    <!--动态更新-->
+    <update id="update" parameterType="com.maffy.pojo.Brand">
+        update tb_brand
+        <set>
+            <if test="brandName != null and brandName != ''">
+                brand_name = #{brandName},
+            </if>
+            <if test="companyName != null and companyName != ''">
+                company_name = #{companyName},
+            </if>
+            <if test="ordered != null and ordered != ''">
+                ordered = #{ordered},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            id = #{id}
+        </set>
+        where id = #{id};
+    </update>
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        delete
+        from tb_brand
+        where id = #{id}
+    </delete>
+    <!--
+        mybatis会将数组参数，封装成在一个Map集合
+            * key名称默认是 array | list
+            * 使用@Param来改变key名称
+    -->
+    <delete id="deleteByIds">
+        delete from tb_brand where 1 != 1
+        <foreach collection="list" item="item" separator="," open="or id in (" close=")">
+            #{item}
+        </foreach>
+    </delete>
+    <select id="findAll" resultMap="brandResultMap">
+        select *
+        from tb_brand;
+    </select>
+    <select id="findById" resultMap="brandResultMap">
+        select *
+        from tb_brand
+        where id = #{id};
+    </select>
+    <!--多条件动态查询-->
+    <select id="findByCondition" resultMap="brandResultMap">
+        select *
+        from tb_brand
+        <where> <!--会自动将第一个‘and’去除-->
+            <if test="status != null">
+                status = #{status}
+            </if>
+            <if test="companyName != null and companyName != ''">
+                and company_name like #{companyName}
+            </if>
+            <if test="brandName != null and brandName != ''">
+                and brand_name like #{brandName}
+            </if>
+        </where>
+    </select>
+    <!--单条件动态查询-->
+    <select id="findByConditionSingle" resultMap="brandResultMap">
+        select *
+        from tb_brand
+        <where>
+            <choose> <!--从中选择一个条件, 选择第一个，类似 switch-->
+                <when test="status != null">
+                    status = #{status}
+                </when>
+                <when test="companyName != null and companyName != ''">
+                    company_name = #{companyName}
+                </when>
+                <when test="brandName != null and brandName != ''">
+                    brand_name = #{brandName}
+                </when>
+                <!--<otherwise>-->
+                <!--    1 = 1-->
+                <!--</otherwise>-->
+            </choose>
+        </where>
+    </select>
+
+    <!--用于解决表字段名与实体类属性名不同的问题，sql标签中使用resultMap属性替代resultType属性-->
+    <resultMap id="brandResultMap" type="com.maffy.pojo.Brand">
+        <!--
+            <id>: 主键的映射
+            <result>: 一般字段的映射
+        -->
+        <result column="brand_name" property="brandName"/>
+        <result column="company_name" property="companyName"/>
+    </resultMap>
+
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.maffy.mapper.EmpMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <!-- 多对一 -->
+    <resultMap id="empWithDeptResultMap" type="com.maffy.pojo.Emp">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="age" column="age"/>
+        <result property="gender" column="gender"/>
+        <result property="deptId" column="dept_id"/>
+        <!--<result property="dept.id" column="d_id"/>-->
+        <!--<result property="dept.name" column="d_name"/>-->
+        <association property="dept" javaType="com.maffy.pojo.Dept">
+            <id property="id" column="d_id"/>
+            <result property="name" column="d_name"/>
+        </association>
+    </resultMap>
+
+    <!--Emp getEmpWithDeptById(Integer id);-->
+    <select id="getEmpWithDeptById" resultMap="empWithDeptResultMap">
+        select
+            e.id, e.username, e.age, e.gender, e.dept_id, d.id d_id, d.name d_name
+        from
+            tb_emp e
+                left join
+            tb_dept d
+            on
+                e.dept_id = d.id
+        where
+            e.id = #{id}
+    </select>
+
+    <resultMap id="empWithDept2StepResultMap" type="com.maffy.pojo.Emp">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="age" column="age"/>
+        <result property="gender" column="gender"/>
+        <result property="deptId" column="dept_id"/>
+        <!--
+            分步查询：会自动根据 dept_id 调用 getDeptById 并将结果赋值给 dept 属性
+            property: 二次查询结果对应属性
+            column: 哪个字段作为二次查询到条件
+            select：二次查询statement的唯一标识（全方法名）
+        -->
+        <association
+                property="dept"
+                column="dept_id"
+                select="com.maffy.mapper.DeptMapper.getDeptById"/>
+    </resultMap>
+
+    <select id="getEmpById" resultMap="empWithDept2StepResultMap">
+        select id, username, age, gender, dept_id from tb_emp where id = #{id}
+    </select>
+
+    <select id="getEmpsByDeptId" resultType="com.maffy.pojo.Emp">
+        select * from tb_emp where dept_id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.maffy.mapper.DeptMapper">
+
+    <!--1对多-->
+    <resultMap id="deptWithEmpResultMap" type="com.maffy.pojo.Dept">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <collection property="emps" ofType="com.maffy.pojo.Emp">
+            <id property="id" column="e_id"/>
+            <result property="username" column="username"/>
+            <result property="age" column="age"/>
+            <result property="gender" column="gender"/>
+            <result property="deptId" column="dept_id"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDeptWithEmpById" resultMap="deptWithEmpResultMap">
+        select d.id, d.name, e.id e_id, e.username, e.age, e.gender, e.dept_id
+        from tb_dept d left join tb_emp e on d.id = e.dept_id
+        where d.id = #{id}
+    </select>
+
+    <resultMap id="deptWithEmp2StepResultMap" type="com.maffy.pojo.Dept">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <!--
+            property: 二次查询结果对应属性
+            column: 哪个字段作为二次查询到条件
+            select：二次查询statement的唯一标识（全方法名）
+        -->
+        <collection
+                property="emps"
+                column="id"
+                select="com.maffy.mapper.EmpMapper.getEmpsByDeptId"/>
+    </resultMap>
+
+    <select id="getDeptById" resultMap="deptWithEmp2StepResultMap">
+        select id, name from tb_dept where id = #{id}
+    </select>
+</mapper>
